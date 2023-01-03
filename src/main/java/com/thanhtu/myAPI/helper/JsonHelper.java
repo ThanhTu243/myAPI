@@ -154,17 +154,16 @@ public class JsonHelper {
 			String strGetterSetter = "";
 			String upperCaseAttribute = "";
 			String strUpperAttributeGetSet = "";
-			if (keyvalue instanceof Integer || keyStr.toLowerCase().contains("id")) {
-				attribute = generateAttribute("Integer", keyStr);
-				strGetterSetter = generateGetterSetter("Integer", keyStr);
-				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Integer", keyStr);
-				strUpperAttributeGetSet = generateUpperAttributeGetSet("Integer", keyStr);
-			} else if ((keyvalue instanceof Long && keyStr.toLowerCase().contains("date"))
-					|| (keyStr.toLowerCase().contains("date"))) {
+			if (keyvalue instanceof Integer && keyStr.contains("Date") || keyvalue instanceof Long &&keyStr.contains("Date") ||keyStr.contains("Date")) {
 				attribute = generateAttribute("Timestamp", keyStr);
 				strGetterSetter = generateGetterSetter("Timestamp", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Timestamp", keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet("Timestamp", keyStr);
+			} else if (keyvalue instanceof Integer || keyStr.toLowerCase().contains("id")) {
+				attribute = generateAttribute("Integer", keyStr);
+				strGetterSetter = generateGetterSetter("Integer", keyStr);
+				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Integer", keyStr);
+				strUpperAttributeGetSet = generateUpperAttributeGetSet("Integer", keyStr);
 			} else if (keyvalue instanceof Long) {
 				attribute = generateAttribute("Long", keyStr);
 				strGetterSetter = generateGetterSetter("Long", keyStr);
@@ -184,7 +183,8 @@ public class JsonHelper {
 				JSONArray jsonArray = new JSONArray(keyvalue.toString());
 				Object objType = jsonArray.get(0);
 				String type = checkDataType(objType).equals("Object")
-						? keyStr.substring(4).substring(0, 1).toUpperCase() + keyStr.substring(4).substring(1)+"Request"
+						? keyStr.substring(4).substring(0, 1).toUpperCase() + keyStr.substring(4).substring(1)
+								+ "Request"
 						: checkDataType(objType);
 				attribute = generateAttribute("List<" + type + ">", keyStr);
 				strGetterSetter = generateGetterSetter("List<" + type + ">", keyStr);
