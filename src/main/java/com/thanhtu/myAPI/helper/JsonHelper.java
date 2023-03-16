@@ -1,5 +1,8 @@
 package com.thanhtu.myAPI.helper;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -18,10 +21,6 @@ import org.jsonschema2pojo.rules.RuleFactory;
 
 import com.sun.codemodel.JCodeModel;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 public class JsonHelper {
 	public static List<String> ListPropertiesFromJsonString(String jsonString) {
 		List<String> listProperties = new ArrayList<String>();
@@ -33,6 +32,30 @@ public class JsonHelper {
 			listProperties.add(matcher.group(1));
 		}
 		return listProperties;
+	}
+
+	public static List<String> ListPropertiesFromJsonStringNoEscape(String jsonStringNoEscape) {
+		List<String> listProperties = new ArrayList<String>();
+		String strPattern = "\"\\s*(\\w+)\\s*\\\"\\s*:";
+		Pattern pattern = Pattern.compile(strPattern);
+		Matcher matcher = pattern.matcher(jsonStringNoEscape);
+
+		while (matcher.find()) {
+			listProperties.add(matcher.group(1));
+		}
+		return listProperties;
+	}
+
+	public static List<String> matchUrlAPI(String jsonString) {
+		List<String> listUrlAPI = new ArrayList<String>();
+		String strPattern = "value\\s*=\\s*\"([\\w\\/]+)\"";
+		Pattern pattern = Pattern.compile(strPattern);
+		Matcher matcher = pattern.matcher(jsonString);
+
+		while (matcher.find()) {
+			listUrlAPI.add(matcher.group(1));
+		}
+		return listUrlAPI;
 	}
 
 	public static void convertJsonToJavaClass(URL inputJsonUrl, File outputJavaClassDirectory, String packageName,
@@ -154,12 +177,15 @@ public class JsonHelper {
 			String strGetterSetter = "";
 			String upperCaseAttribute = "";
 			String strUpperAttributeGetSet = "";
-			if (keyvalue instanceof Integer && keyStr.contains("Date") || keyvalue instanceof Long &&keyStr.contains("Date") ||keyStr.contains("Date")) {
+			
+			if ((keyvalue instanceof Integer && (keyStr.toLowerCase().contains("date") || keyStr.toLowerCase().contains("time")) && (!keyStr.toLowerCase().contains("list") || !keyStr.toLowerCase().contains("lst"))
+					)|| (keyvalue instanceof Long && (keyStr.toLowerCase().contains("date") || keyStr.toLowerCase().contains("time")) && (!keyStr.toLowerCase().contains("list") || !keyStr.toLowerCase().contains("lst"))
+							)) {
 				attribute = generateAttribute("Timestamp", keyStr);
 				strGetterSetter = generateGetterSetter("Timestamp", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Timestamp", keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet("Timestamp", keyStr);
-			} else if (keyvalue instanceof Integer || keyStr.toLowerCase().contains("id")) {
+			} else if (keyvalue instanceof Integer) {
 				attribute = generateAttribute("Integer", keyStr);
 				strGetterSetter = generateGetterSetter("Integer", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Integer", keyStr);
@@ -174,22 +200,47 @@ public class JsonHelper {
 				strGetterSetter = generateGetterSetter("Double", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Double", keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet("Double", keyStr);
-			} else if (keyvalue instanceof String) {
+			} else if (keyvalue instanceof String || keyStr.contains("word") || keyStr.contains("Word")) {
 				attribute = generateAttribute("String", keyStr);
 				strGetterSetter = generateGetterSetter("String", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("String", keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet("String", keyStr);
 			} else if (keyvalue instanceof JSONArray) {
 				JSONArray jsonArray = new JSONArray(keyvalue.toString());
-				Object objType = jsonArray.get(0);
-				String type = checkDataType(objType).equals("Object")
-						? keyStr.substring(4).substring(0, 1).toUpperCase() + keyStr.substring(4).substring(1)
-								+ "Request"
-						: checkDataType(objType);
+				String type;
+				if (jsonArray.isEmpty()) {
+					type = "Object";
+				} else {
+					Object objType = jsonArray.get(0);
+					List<Integer> listIntegers = getElemntEQUALLISTORLST(keyStr.toString());
+					if(listIntegers.size()==0)
+					{
+						type = checkDataType(objType).equals("Object")
+								? keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1)
+										+ "Request"
+								: checkDataType(objType);
+					}
+					else {
+						String stringRemoveStringList = keyStr.toString().substring(0, listIntegers.get(0))
+								+ keyStr.toString().substring(listIntegers.get(1) + 1);
+						type = checkDataType(objType).equals("Object")
+								? stringRemoveStringList.substring(0, 1).toUpperCase() + stringRemoveStringList.substring(1)
+										+ "Request"
+								: checkDataType(objType);
+					}
+				}
+
 				attribute = generateAttribute("List<" + type + ">", keyStr);
 				strGetterSetter = generateGetterSetter("List<" + type + ">", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("List<" + type + ">", keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet("List<" + type + ">", keyStr);
+			} else if (keyvalue instanceof JSONObject) {
+				String type=keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1);
+				attribute = generateAttribute(type , keyStr);
+				strGetterSetter = generateGetterSetter(type , keyStr);
+				upperCaseAttribute = generateUpperAttributeAndJsonProperties(type, keyStr);
+				strUpperAttributeGetSet = generateUpperAttributeGetSet(type, keyStr);
+
 			} else if (keyvalue instanceof Boolean) {
 				attribute = generateAttribute("Boolean", keyStr);
 				strGetterSetter = generateGetterSetter("Boolean", keyStr);
@@ -208,15 +259,28 @@ public class JsonHelper {
 			// for nested objects iteration if required
 			if (keyvalue instanceof JSONArray) {
 				JSONArray jsonArray = new JSONArray(keyvalue.toString());
-				Object objType = jsonArray.get(0);
-				String type = checkDataType(objType);
+				String type;
+				if (jsonArray.isEmpty()) {
+					type = "ObjectEmpty";
+				} else {
+					Object objType = jsonArray.get(0);
+					type = checkDataType(objType);
+				}
+
 				if (type == "Object") {
 //					ObjectMapper mapper = new ObjectMapper();
 //					mapper.setSerializationInclusion(Include.ALWAYS);
 					JSONObject jsonObject = new JSONObject(jsonArray.get(0).toString());
 					String subFileName = "D:\\MyAPI\\JsonToClassUppercase\\" + keyStr + ".txt";
 					jsonToJavaClassUppercase(subFileName, jsonObject);
+				} else if (type == "ObjectEmpty") {
+
 				}
+			}
+			if(keyvalue instanceof JSONObject)
+			{
+				String subFileName = "D:\\MyAPI\\JsonToClassUppercase\\" + keyStr + ".txt";
+				jsonToJavaClassUppercase(subFileName, new JSONObject(keyvalue.toString()));
 			}
 		}
 		System.out.println(fileName);
@@ -273,7 +337,7 @@ public class JsonHelper {
 	}
 
 	public static String upperCaseAllProperties(String jsonString) {
-		String strPattern = "\\\"(\\w+)\":";
+		String strPattern = "\\\"(\\w+)\\s*\"\\s*:";
 		Pattern pattern = Pattern.compile(strPattern);
 		Matcher matcher = pattern.matcher(jsonString);
 
@@ -284,5 +348,19 @@ public class JsonHelper {
 
 		matcher.appendTail(result);
 		return result.toString();
+	}
+
+	public static List<Integer> getElemntEQUALLISTORLST(String string) {
+		List<Integer> list = new ArrayList<Integer>();
+		if (string.toUpperCase().contains("LIST")) {
+			Integer from = string.toUpperCase().indexOf("LIST");
+			list.add(from);
+			list.add(from + 3);
+		} else if (string.toUpperCase().contains("LST")) {
+			Integer from = string.toUpperCase().indexOf("LST");
+			list.add(from);
+			list.add(from + 2);
+		}
+		return list;
 	}
 }
