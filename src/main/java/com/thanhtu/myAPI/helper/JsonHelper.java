@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -177,10 +178,13 @@ public class JsonHelper {
 			String strGetterSetter = "";
 			String upperCaseAttribute = "";
 			String strUpperAttributeGetSet = "";
-			
-			if ((keyvalue instanceof Integer && (keyStr.toLowerCase().contains("date") || keyStr.toLowerCase().contains("time")) && (!keyStr.toLowerCase().contains("list") || !keyStr.toLowerCase().contains("lst"))
-					)|| (keyvalue instanceof Long && (keyStr.toLowerCase().contains("date") || keyStr.toLowerCase().contains("time")) && (!keyStr.toLowerCase().contains("list") || !keyStr.toLowerCase().contains("lst"))
-							)) {
+
+			if ((keyvalue instanceof Integer
+					&& (keyStr.toLowerCase().contains("date") || keyStr.toLowerCase().contains("time"))
+					&& (!keyStr.toLowerCase().contains("list") || !keyStr.toLowerCase().contains("lst")))
+					|| (keyvalue instanceof Long
+							&& (keyStr.toLowerCase().contains("date") || keyStr.toLowerCase().contains("time"))
+							&& (!keyStr.toLowerCase().contains("list") || !keyStr.toLowerCase().contains("lst")))) {
 				attribute = generateAttribute("Timestamp", keyStr);
 				strGetterSetter = generateGetterSetter("Timestamp", keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("Timestamp", keyStr);
@@ -213,19 +217,16 @@ public class JsonHelper {
 				} else {
 					Object objType = jsonArray.get(0);
 					List<Integer> listIntegers = getElemntEQUALLISTORLST(keyStr.toString());
-					if(listIntegers.size()==0)
-					{
+					if (listIntegers.size() == 0) {
 						type = checkDataType(objType).equals("Object")
-								? keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1)
-										+ "Request"
+								? keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1) + "Request"
 								: checkDataType(objType);
-					}
-					else {
+					} else {
 						String stringRemoveStringList = keyStr.toString().substring(0, listIntegers.get(0))
 								+ keyStr.toString().substring(listIntegers.get(1) + 1);
 						type = checkDataType(objType).equals("Object")
-								? stringRemoveStringList.substring(0, 1).toUpperCase() + stringRemoveStringList.substring(1)
-										+ "Request"
+								? stringRemoveStringList.substring(0, 1).toUpperCase()
+										+ stringRemoveStringList.substring(1) + "Request"
 								: checkDataType(objType);
 					}
 				}
@@ -235,9 +236,9 @@ public class JsonHelper {
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties("List<" + type + ">", keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet("List<" + type + ">", keyStr);
 			} else if (keyvalue instanceof JSONObject) {
-				String type=keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1);
-				attribute = generateAttribute(type , keyStr);
-				strGetterSetter = generateGetterSetter(type , keyStr);
+				String type = keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1);
+				attribute = generateAttribute(type, keyStr);
+				strGetterSetter = generateGetterSetter(type, keyStr);
 				upperCaseAttribute = generateUpperAttributeAndJsonProperties(type, keyStr);
 				strUpperAttributeGetSet = generateUpperAttributeGetSet(type, keyStr);
 
@@ -277,8 +278,7 @@ public class JsonHelper {
 
 				}
 			}
-			if(keyvalue instanceof JSONObject)
-			{
+			if (keyvalue instanceof JSONObject) {
 				String subFileName = "D:\\MyAPI\\JsonToClassUppercase\\" + keyStr + ".txt";
 				jsonToJavaClassUppercase(subFileName, new JSONObject(keyvalue.toString()));
 			}
@@ -362,5 +362,17 @@ public class JsonHelper {
 			list.add(from + 2);
 		}
 		return list;
+	}
+
+	public static void mapAPIAndRequestBody(String jsonString, Map<String, String> mapAPILinkRequestBody) {
+		// TODO Auto-generated method stub
+//		String strPattern = "/(\\/[\\w\\/]+)[\\\\\":\\]\\$#,\\/{\\s\\w[-]+schemas\\/(\\w+)/gm";
+		String strPattern = "\"(\\/[\\w\\/]+)[\": \\],\\/$#{\\s\\w\\[-]+\\/schemas\\/(\\w+)\"";
+		Pattern pattern = Pattern.compile(strPattern);
+		Matcher matcher = pattern.matcher(jsonString);
+
+		while (matcher.find()) {
+			mapAPILinkRequestBody.put(matcher.group(1), matcher.group(2));
+		}
 	}
 }
