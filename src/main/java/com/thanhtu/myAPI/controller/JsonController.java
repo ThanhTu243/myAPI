@@ -1,9 +1,12 @@
 package com.thanhtu.myAPI.controller;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +29,13 @@ public class JsonController {
 	public static Map<String, String> articleMapOne;
 	static {
 		articleMapOne = new HashMap<>();
-		articleMapOne.put("ar01", "Intro to Map, Best");
-		articleMapOne.put("ar02", "Some article");
+		articleMapOne.put("key1", "value1 nè");
+		articleMapOne.put("key2", "value2 nè");
+		articleMapOne.put("key3", "value3 nè");
+		articleMapOne.put("key4", "value4 nè");
+		articleMapOne.put("key5", "value5 nè");
+		articleMapOne.put("key6", "value6 nè");
+
 	}
 
 	@RequestMapping(value = "/json-javaclass", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
@@ -62,47 +70,24 @@ public class JsonController {
 	public ResponseEntity<Object> JsonUppercaseToJson(@RequestBody JsonUpperCaseToCamelRequestModel request)
 			throws Exception {
 		List<String> listPropertiesCamel = JsonHelper.ListPropertiesFromJsonStringNoEscape(request.getJsonString());
+		Set<String> setPropertiesCamel = listPropertiesCamel.stream().collect(Collectors.toSet());
 		List<String> listPropertiesUppercase = JsonHelper
 				.ListPropertiesFromJsonStringNoEscape(request.getUppercaseJsonString());
-		String result = request.getUppercaseJsonString();
-		Boolean isRemoveI = false;
-		Boolean isRemoveJ = false;
-		Integer sizePropertiesCamel = listPropertiesCamel.size();
-		Integer sizePropertiesUppercase = listPropertiesUppercase.size();
-		for (int i = 0; i < sizePropertiesCamel;) {
-			isRemoveI = false;
-			isRemoveJ = false;
-			for (int j = 0; j < sizePropertiesUppercase;) {
-				String uppercaseString = listPropertiesUppercase.get(j);
-				String upperCamelCaseString = listPropertiesCamel.get(i).toUpperCase();
-				if (upperCamelCaseString.equals(uppercaseString)) {
-					String uppercase = listPropertiesUppercase.get(j);
-					String camel = listPropertiesCamel.get(i);
-					result = result.replace(uppercase, camel);
-					listPropertiesCamel.remove(i);
-					listPropertiesUppercase.remove(j);
-					isRemoveI = true;
-					isRemoveJ = true;
-					sizePropertiesCamel = listPropertiesCamel.size();
-					sizePropertiesUppercase = listPropertiesUppercase.size();
-					break;
-				}
-
-				if (isRemoveJ != true && listPropertiesUppercase.size() > 0 && listPropertiesUppercase.size() > j) {
-					j++;
-				}
-				if (sizePropertiesUppercase == 0) {
-					break;
-				}
+		Set<String> setPropertiesUppercase = listPropertiesUppercase.stream().collect(Collectors.toSet());
+		Map<String, String> mapPropertiesCamel = setPropertiesCamel.stream().collect(Collectors.toMap(s -> s, s -> s));
+		Map<String, String> mapPropertiesUppercase = setPropertiesUppercase.stream()
+				.collect(Collectors.toMap(s -> s, s -> s));
+		for (Map.Entry<String, String> entry : mapPropertiesCamel.entrySet()) {
+			String key = entry.getKey().toUpperCase();
+			if (mapPropertiesUppercase.containsKey(key)) {
+				mapPropertiesUppercase.put(key, entry.getKey());
 			}
-			if (isRemoveI != true && listPropertiesCamel.size() > 0 && listPropertiesCamel.size() > i) {
-				i++;
-			}
-			if (sizePropertiesUppercase == 0) {
-				break;
-			}
-
 		}
+		String result = request.getUppercaseJsonString();
+		for (Map.Entry<String, String> entryItem : mapPropertiesUppercase.entrySet()) {
+			result = result.replace("\""+entryItem.getKey().toString()+"\"", "\""+entryItem.getValue().toString()+"\"");
+		}
+
 		return ResponseEntity.ok(result);
 	}
 
@@ -163,10 +148,31 @@ public class JsonController {
 
 	@RequestMapping(value = "/getRequestBodyFromDocAPI", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> getRequestBodyFromDocAPI(@RequestBody JsonPermissionModel model) throws Exception {
-		String strDoc=model.getJsonString();
-		Map<String, String> mapAPILinkRequestBody=new HashMap<String, String>();
+		String strDoc = model.getJsonString();
+		Map<String, String> mapAPILinkRequestBody = new HashMap<String, String>();
 		mapAPILinkRequestBody.put("/ahihi", "kkk");
-		JsonHelper.mapAPIAndRequestBody(strDoc,mapAPILinkRequestBody);
+		JsonHelper.mapAPIAndRequestBody(strDoc, mapAPILinkRequestBody);
 		return ResponseEntity.ok(mapAPILinkRequestBody);
+	}
+
+	@RequestMapping(value = "/testremovemap", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
+	public ResponseEntity<Object> testremovemap() throws Exception {
+		Map<String, String> mapTest = new HashMap<String, String>();
+		mapTest = new HashMap<>();
+		mapTest.put("key1", "value1 nè");
+		mapTest.put("key2", "value2 nè");
+		mapTest.put("key3", "value3 nè");
+		mapTest.put("key4", "value4 nè");
+		mapTest.put("key5", "value5 nè");
+		mapTest.put("key6", "value6 nè");
+
+		for (Iterator<Map.Entry<String, String>> it = mapTest.entrySet().iterator(); it.hasNext();) {
+			Map.Entry<String, String> entry = it.next();
+			String key = entry.getKey();
+			if (!key.equals("key3")) {
+				it.remove();
+			}
+		}
+		return ResponseEntity.ok(mapTest);
 	}
 }
