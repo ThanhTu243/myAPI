@@ -1,15 +1,28 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.container.*
+
 plugins {
 	id 'java'
+	id 'application'
 	id 'org.springframework.boot' version '2.7.6'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'com.bmuschko.docker-spring-boot-application' version '6.1.4'
 }
 
 group = 'com.thanhtu'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 repositories {
 	mavenCentral()
+}
+application {
+    mainClassName = 'com.thanhtu.myAPI.MyApiApplication'
 }
 
 dependencies {
@@ -21,11 +34,41 @@ dependencies {
 	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
 	// https://mvnrepository.com/artifact/org.json/json
 	implementation group: 'org.json', name: 'json', version: '20180813'
-	
-	
+	// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient
+	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
 	
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+docker {
+	url = 'tcp://192.168.65.0/24'
+}
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.thanhtu.myAPI.MyApiApplication'
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
+task createDockerFile(type: Dockerfile) {
+    from 'jdk1.8.0_231'
+    copyFile jar.archiveFileName.get(), '/app/test_service.jar'
+    entryPoint 'java'
+    defaultCommand '-jar', '/app/test_service.jar'
+    exposePort 8081
+}
+task syncJar(type: Copy) {
+    dependsOn assemble
+    from jar.destinationDirectory
+    into "$buildDir/docker"
+}
+task buildImage(type: DockerBuildImage) {
+    dependsOn createDockerFile, syncJar
+    inputDir = createDockerFile.getDestDir()
+    images = ["thanhtu243/myApi-gradle-docker:1.0"]
 }

@@ -1,5 +1,6 @@
 package com.thanhtu.myAPI.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thanhtu.myAPI.helper.JsonHelper;
 import com.thanhtu.myAPI.model.JsonPermissionModel;
 import com.thanhtu.myAPI.model.JsonUpperCaseToCamelRequestModel;
+import com.thanhtu.myAPI.request.RequestResponse;
 
 @RestController
 @CrossOrigin(origins = "http://127.0.0.1:5500")
@@ -85,7 +87,8 @@ public class JsonController {
 		}
 		String result = request.getUppercaseJsonString();
 		for (Map.Entry<String, String> entryItem : mapPropertiesUppercase.entrySet()) {
-			result = result.replace("\""+entryItem.getKey().toString()+"\"", "\""+entryItem.getValue().toString()+"\"");
+			result = result.replace("\"" + entryItem.getKey().toString() + "\"",
+					"\"" + entryItem.getValue().toString() + "\"");
 		}
 
 		return ResponseEntity.ok(result);
@@ -136,13 +139,8 @@ public class JsonController {
 	}
 
 	@RequestMapping(value = "/testGetKeyIsVariableMap", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
-	public ResponseEntity<Object> testGetKeyIsVariableMap(@RequestParam(name = "key") String key) throws Exception {
+	public ResponseEntity<Object> testGetKeyIsVariableMap() throws Exception {
 		String value = "";
-		if (articleMapOne.containsKey(key)) {
-			value = articleMapOne.get(key);
-		} else {
-			value = "Key sai chết mọe";
-		}
 		return ResponseEntity.ok(value);
 	}
 
@@ -155,24 +153,44 @@ public class JsonController {
 		return ResponseEntity.ok(mapAPILinkRequestBody);
 	}
 
-	@RequestMapping(value = "/testremovemap", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
+	@RequestMapping(value = "/test", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> testremovemap() throws Exception {
-		Map<String, String> mapTest = new HashMap<String, String>();
-		mapTest = new HashMap<>();
-		mapTest.put("key1", "value1 nè");
-		mapTest.put("key2", "value2 nè");
-		mapTest.put("key3", "value3 nè");
-		mapTest.put("key4", "value4 nè");
-		mapTest.put("key5", "value5 nè");
-		mapTest.put("key6", "value6 nè");
-
-		for (Iterator<Map.Entry<String, String>> it = mapTest.entrySet().iterator(); it.hasNext();) {
-			Map.Entry<String, String> entry = it.next();
-			String key = entry.getKey();
-			if (!key.equals("key3")) {
-				it.remove();
-			}
+		List<RequestResponse> listResponses = new ArrayList<>();
+		String strCustomerId = "[\"1076222062\",\n" + "\"1076237332\",\n" + "\"1076237772\",\n" + "\"1076238224\",\n"
+				+ "\"1076238582\",\n" + "\"1076239023\",\n" + "\"1076239177\",\n" + "\"1076241635\",\n"
+				+ "\"1076242435\",\n" + "\"1076242437\",\n" + "\"1076244191\",\n" + "\"1076244338\",\n"
+				+ "\"1076244690\",\n" + "\"1076244766\",\n" + "\"1076244829\",\n" + "\"1076244857\",\n"
+				+ "\"1076244902\",\n" + "\"1076244932\",\n" + "\"1076245420\",\n" + "\"1076245427\",\n"
+				+ "\"1076245526\",\n" + "\"1076245550\",\n" + "\"1076245551\",\n" + "\"1076245597\",\n"
+				+ "\"1076245603\",\n" + "\"1076245645\",\n" + "\"1076245647\",\n" + "\"1076245651\",\n"
+				+ "\"1076245898\"]";
+		List<String> listCustomerId = new ObjectMapper().readValue(strCustomerId, new TypeReference<List<String>>() {
+		});
+		for (String cutomerId : listCustomerId) {
+			RequestResponse requestResponse = new RequestResponse();
+			requestResponse.setCustomerId(cutomerId);
+			listResponses.add(requestResponse);
 		}
-		return ResponseEntity.ok(mapTest);
+		String strValue = "[4902994.0,\n" + "5233054.0,\n" + "5425059.0,\n" + "8277828.0,\n" + "5967833.0,\n"
+				+ "7478176.0,\n" + "5919502.0,\n" + "4051729.0,\n" + "17899109,\n" + "5070176.0,\n" + "15147458,\n"
+				+ "9464596.0,\n" + "2188731.0,\n" + "7827786.0,\n" + "737556.0,\n" + "11386989,\n" + "7231566.0,\n"
+				+ "897254.0,\n" + "1269543.0,\n" + "16430785,\n" + "2738438.0,\n" + "9421341.0,\n" + "5980062.0,\n"
+				+ "4071090.0,\n" + "6704386.0,\n" + "3049880.0,\n" + "10699238,\n" + "14776821,\n" + "7593173.0]";
+		List<Double> listValue = new ObjectMapper().readValue(strValue, new TypeReference<List<Double>>() {
+		});
+		for (int i = 0; i < listValue.size(); i++) {
+			RequestResponse requestResponse = listResponses.get(i);
+			requestResponse.setValue(listValue.get(i));
+		}
+		System.out.println("[");
+		for (RequestResponse requestResponse : listResponses) {
+			System.out.println("{");
+			System.out.println("\"customerId\":" + requestResponse.getCustomerId() + ",");
+			System.out.println("\"value\":" + requestResponse.getValue() + ",");
+			System.out.println("\"recentDate\":" + requestResponse.getRecentDate());
+			System.out.println("},");
+		}
+		System.out.println("]");
+		return ResponseEntity.ok(0);
 	}
 }
