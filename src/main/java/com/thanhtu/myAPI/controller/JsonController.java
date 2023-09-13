@@ -43,29 +43,43 @@ public class JsonController {
 	@RequestMapping(value = "/json-javaclass", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> JsonToJavaClass(@RequestBody String jsonString) throws Exception {
 		JSONObject jsonObj = new JSONObject(jsonString);
-		String fileName = "D:\\MyAPI\\JsonToClass\\request.txt";
-		JsonHelper.jsonToJavaClass(fileName, jsonObj);
-		return ResponseEntity.ok("Thành công");
+		String fileName = "REQUEST";
+		StringBuilder result = new StringBuilder();
+		JsonHelper.jsonToJavaClass(fileName, jsonObj, result);
+		return ResponseEntity.ok(result.toString());
 	}
 
 	@RequestMapping(value = "/json-javaclass-uppercase", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> JsonToJavaClassUppercase(@RequestBody String jsonString) throws Exception {
 		JSONObject jsonObj = new JSONObject(jsonString);
-		String fileName = "D:\\MyAPI\\JsonToClassUppercase\\request.txt";
-		JsonHelper.jsonToJavaClassUppercase(fileName, jsonObj);
-		return ResponseEntity.ok("Thành công");
+		String fileName = "REQUEST";
+		StringBuilder result = new StringBuilder();
+		JsonHelper.jsonToJavaClassUppercase(fileName, jsonObj, result);
+		return ResponseEntity.ok(result.toString());
 	}
 
 	@RequestMapping(value = "/json-json-uppercase", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> JsonToJsonUppercase(@RequestBody String jsonString) throws Exception {
 		String upperCaseJsonString = null;
+		StringBuilder result = new StringBuilder();
 		try {
-			upperCaseJsonString = JsonHelper.upperCaseAllProperties(jsonString);
+			if (jsonString.charAt(0) != '{' || jsonString.charAt(jsonString.length() - 1) != '}') {
+				result.append(jsonString.toUpperCase());
+			} else {
+				upperCaseJsonString = JsonHelper.upperCaseAllProperties(jsonString);
+				String[] tokens = upperCaseJsonString.split("\r\n");
+				if (tokens.length == 1) {
+					tokens = upperCaseJsonString.split("\n");
+				}
+				for (String token : tokens) {
+					result.append(token.trim()).append("<br>");
+				}
+			}
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
-		return ResponseEntity.ok(upperCaseJsonString);
+		return ResponseEntity.ok(result.toString());
 	}
 
 	@RequestMapping(value = "/json-uppercase-json", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
@@ -90,13 +104,18 @@ public class JsonController {
 			result = result.replace("\"" + entryItem.getKey().toString() + "\"",
 					"\"" + entryItem.getValue().toString() + "\"");
 		}
-
-		return ResponseEntity.ok(result);
+		StringBuilder sbResult = new StringBuilder();
+		String[] tokens = result.split(",");
+		for (String token : tokens) {
+			sbResult.append(token).append("<br>");
+		}
+		return ResponseEntity.ok(sbResult.toString());
 	}
 
 	@RequestMapping(value = "/permissionToApplication", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> convertPermissionToApplication(@RequestBody JsonPermissionModel model)
 			throws Exception {
+		StringBuilder result = new StringBuilder();
 		ObjectMapper mapper = new ObjectMapper();
 		List<LinkedHashMap<String, String>> linkedHashMaps = mapper.readValue(model.getJsonString(),
 				new TypeReference<List<LinkedHashMap<String, String>>>() {
@@ -104,38 +123,56 @@ public class JsonController {
 		String config = "resources.permissions";
 		Integer i = model.getFrom() + 1;
 		for (LinkedHashMap<String, String> map : linkedHashMaps) {
-			System.out.println(config + "[" + i + "].url" + "=" + map.get("url"));
-			System.out.println(config + "[" + i + "].key" + "=" + map.get("key"));
+			result.append(config + "[" + i + "].url" + "=" + map.get("url") + "<br>");
+			result.append(config + "[" + i + "].key" + "=" + map.get("key") + "<br>");
 			i++;
 		}
-		return ResponseEntity.ok("Success");
+		return ResponseEntity.ok(result.toString());
 	}
 
 	@RequestMapping(value = "/controllerToPermission", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> convertFileJsonToApplicationProperties(@RequestBody JsonPermissionModel request)
 			throws Exception {
+		StringBuilder result = new StringBuilder();
 		List<String> listUrlAPI = JsonHelper.matchUrlAPI(request.getJsonString());
+		int i = 0;
+		String[] keyTokens = request.getKeys().split(",");
 		for (String urlAPI : listUrlAPI) {
-			System.out.println(",{");
-			System.out.println("    \"url\": " + "\"" + urlAPI + "\",");
-			System.out.println("    \"key\": " + "\"LIST_FORMS\"");
-			System.out.println("}");
+			result.append(",{" + "<br>");
+			result.append("    \"url\": " + "\"" + urlAPI + "\"," + "<br>");
+			if (keyTokens.length > i) {
+				result.append("    \"key\": " + "\"" + keyTokens[i] + "\"," + "<br>");
+			} else {
+				i = 0;
+				result.append("    \"key\": " + "\"" + keyTokens[i] + "\"," + "<br>");
+			}
+			result.append("}" + "<br>");
+			i = i + 1;
 		}
-		return ResponseEntity.ok("Success");
+		return ResponseEntity.ok(result);
 	}
 
 	@RequestMapping(value = "/controllerToApplication", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
 	public ResponseEntity<Object> convertControllerToApplicationProperties(@RequestBody JsonPermissionModel model)
 			throws Exception {
 		String config = "resources.permissions";
+		StringBuilder result = new StringBuilder();
 		List<String> listUrlAPI = JsonHelper.matchUrlAPI(model.getJsonString());
 		Integer from = model.getFrom() + 1;
+		int i = 0;
+		String[] keyTokens = model.getKeys().split(",");
 		for (String urlAPI : listUrlAPI) {
-			System.out.println(config + "[" + from + "].url" + "=" + urlAPI);
-			System.out.println(config + "[" + from + "].key" + "=" + "LIST_FORMS");
+			result.append(config + "[" + from + "].url" + "=" + urlAPI + "<br>");
+			if (keyTokens.length > i) {
+				result.append(config + "[" + from + "].key" + "=" + "\"" + keyTokens[i] + "\"" + "<br>");
+			} else {
+				i = 0;
+				result.append(config + "[" + from + "].key" + "=" + "\"" + keyTokens[i] + "\"" + "<br>");
+			}
 			from++;
+			i=i+1;
 		}
-		return ResponseEntity.ok("Success");
+		return ResponseEntity.ok(result.toString());
 	}
 
 	@RequestMapping(value = "/testGetKeyIsVariableMap", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")

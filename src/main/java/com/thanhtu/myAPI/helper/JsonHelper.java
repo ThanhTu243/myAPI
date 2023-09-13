@@ -109,7 +109,7 @@ public class JsonHelper {
 		jcodeModel.build(outputJavaClassDirectory);
 	}
 
-	public static void jsonToJavaClass(String fileName, JSONObject jsonObj) throws Exception {
+	public static void jsonToJavaClass(String fileName, JSONObject jsonObj,StringBuilder result) throws Exception {
 		List<String> attributeList = new ArrayList<String>();
 		List<String> listGetSetAttribute = new ArrayList<String>();
 		for (Object key : jsonObj.keySet()) {
@@ -155,17 +155,16 @@ public class JsonHelper {
 //					ObjectMapper mapper = new ObjectMapper();
 //					mapper.setSerializationInclusion(Include.ALWAYS);
 					JSONObject jsonObject = new JSONObject(jsonArray.get(0).toString());
-					String subFileName = "D:\\MyAPI\\JsonToClass\\" + keyStr + ".txt";
-					jsonToJavaClassUppercase(subFileName, jsonObject);
+					jsonToJavaClassUppercase(keyStr, jsonObject,result);
 				}
 			}
 		}
 		System.out.println(fileName);
 		attributeList.stream().forEach(s -> System.out.println(s));
-		FileHelper.writeFileJavaClass(fileName, attributeList, listGetSetAttribute);
+		FileHelper.writeFileJavaClass(fileName, attributeList, listGetSetAttribute,result);
 	}
 
-	public static void jsonToJavaClassUppercase(String fileName, JSONObject jsonObj) throws Exception {
+	public static void jsonToJavaClassUppercase(String fileName, JSONObject jsonObj,StringBuilder result) throws Exception {
 		List<String> attributeList = new ArrayList<String>();
 		List<String> listGetSetAttribute = new ArrayList<String>();
 		List<String> upperCaseAttributeList = new ArrayList<String>();
@@ -231,10 +230,10 @@ public class JsonHelper {
 					}
 				}
 
-				attribute = generateAttribute("List<" + type + ">", keyStr);
-				strGetterSetter = generateGetterSetter("List<" + type + ">", keyStr);
-				upperCaseAttribute = generateUpperAttributeAndJsonProperties("List<" + type + ">", keyStr);
-				strUpperAttributeGetSet = generateUpperAttributeGetSet("List<" + type + ">", keyStr);
+				attribute = generateAttribute("List&lt;" + type + "&gt;", keyStr);
+				strGetterSetter = generateGetterSetter("List&lt;" + type + "&gt;", keyStr);
+				upperCaseAttribute = generateUpperAttributeAndJsonProperties("List&lt;" + type + "&gt;", keyStr);
+				strUpperAttributeGetSet = generateUpperAttributeGetSet("List&lt;" + type + "&gt;", keyStr);
 			} else if (keyvalue instanceof JSONObject) {
 				String type = keyStr.substring(0, 1).toUpperCase() + keyStr.substring(1);
 				attribute = generateAttribute(type, keyStr);
@@ -272,21 +271,19 @@ public class JsonHelper {
 //					ObjectMapper mapper = new ObjectMapper();
 //					mapper.setSerializationInclusion(Include.ALWAYS);
 					JSONObject jsonObject = new JSONObject(jsonArray.get(0).toString());
-					String subFileName = "D:\\MyAPI\\JsonToClassUppercase\\" + keyStr + ".txt";
-					jsonToJavaClassUppercase(subFileName, jsonObject);
+					jsonToJavaClassUppercase(keyStr, jsonObject,result);
 				} else if (type == "ObjectEmpty") {
 
 				}
 			}
 			if (keyvalue instanceof JSONObject) {
-				String subFileName = "D:\\MyAPI\\JsonToClassUppercase\\" + keyStr + ".txt";
-				jsonToJavaClassUppercase(subFileName, new JSONObject(keyvalue.toString()));
+				jsonToJavaClassUppercase(keyStr, new JSONObject(keyvalue.toString()),result);
 			}
 		}
 		System.out.println(fileName);
 		attributeList.stream().forEach(s -> System.out.println(s));
 		FileHelper.writeFileJavaClassAndUpperCase(fileName, attributeList, upperCaseAttributeList, listGetSetAttribute,
-				listGetSetAttributeUppercase);
+				listGetSetAttributeUppercase,result);
 	}
 
 	public static String generateAttribute(String dataType, String keyStr) {

@@ -1,0 +1,33 @@
+private List&lt;ActionExchangeRequestsRequest&gt; actionExchangeRequests;
+private Integer createdUser;
+
+@JsonProperty(value = "ACTIONEXCHANGEREQUESTS")
+private List&lt;ActionExchangeRequestsRequest&gt; reqactionExchangeRequests;
+@JsonProperty(value = "CREATEDUSER")
+private Integer reqcreatedUser;
+public List&lt;ActionExchangeRequestsRequest&gt; getActionExchangeRequests(){
+    return actionExchangeRequests;
+}
+public void setActionExchangeRequests(List&lt;ActionExchangeRequestsRequest&gt; actionExchangeRequests){
+    this.actionExchangeRequests = actionExchangeRequests;
+}
+public Integer getCreatedUser(){
+    return createdUser;
+}
+public void setCreatedUser(Integer createdUser){
+    this.createdUser = createdUser;
+}
+public List&lt;ActionExchangeRequestsRequest&gt; getReqactionExchangeRequests(){
+    return reqactionExchangeRequests;
+}
+public void setReqactionExchangeRequests(List&lt;ActionExchangeRequestsRequest&gt; reqactionExchangeRequests){
+    this.reqactionExchangeRequests = reqactionExchangeRequests;
+    this.actionExchangeRequests = reqactionExchangeRequests;
+}
+public Integer getReqcreatedUser(){
+    return reqcreatedUser;
+}
+public void setReqcreatedUser(Integer reqcreatedUser){
+    this.reqcreatedUser = reqcreatedUser;
+    this.createdUser = reqcreatedUser;
+}

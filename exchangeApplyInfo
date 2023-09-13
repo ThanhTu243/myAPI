@@ -1,0 +1,65 @@
+private String attributeCode;
+private String operatorCode;
+private List&lt;Integer&gt; value;
+private Object formulaCode;
+
+@JsonProperty(value = "ATTRIBUTECODE")
+private String reqattributeCode;
+@JsonProperty(value = "OPERATORCODE")
+private String reqoperatorCode;
+@JsonProperty(value = "VALUE")
+private List&lt;Integer&gt; reqvalue;
+@JsonProperty(value = "FORMULACODE")
+private Object reqformulaCode;
+public String getAttributeCode(){
+    return attributeCode;
+}
+public void setAttributeCode(String attributeCode){
+    this.attributeCode = attributeCode;
+}
+public String getOperatorCode(){
+    return operatorCode;
+}
+public void setOperatorCode(String operatorCode){
+    this.operatorCode = operatorCode;
+}
+public List&lt;Integer&gt; getValue(){
+    return value;
+}
+public void setValue(List&lt;Integer&gt; value){
+    this.value = value;
+}
+public Object getFormulaCode(){
+    return formulaCode;
+}
+public void setFormulaCode(Object formulaCode){
+    this.formulaCode = formulaCode;
+}
+public String getReqattributeCode(){
+    return reqattributeCode;
+}
+public void setReqattributeCode(String reqattributeCode){
+    this.reqattributeCode = reqattributeCode;
+    this.attributeCode = reqattributeCode;
+}
+public String getReqoperatorCode(){
+    return reqoperatorCode;
+}
+public void setReqoperatorCode(String reqoperatorCode){
+    this.reqoperatorCode = reqoperatorCode;
+    this.operatorCode = reqoperatorCode;
+}
+public List&lt;Integer&gt; getReqvalue(){
+    return reqvalue;
+}
+public void setReqvalue(List&lt;Integer&gt; reqvalue){
+    this.reqvalue = reqvalue;
+    this.value = reqvalue;
+}
+public Object getReqformulaCode(){
+    return reqformulaCode;
+}
+public void setReqformulaCode(Object reqformulaCode){
+    this.reqformulaCode = reqformulaCode;
+    this.formulaCode = reqformulaCode;
+}
