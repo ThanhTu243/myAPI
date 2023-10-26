@@ -1,0 +1,7 @@
+
+@JsonAlias(value = {"ISREQUIRED","isRequired"}
+private Boolean isRequired;
+@JsonAlias(value = {"GIFTATTRIBUTEID","giftAttributeId"}
+private Integer giftAttributeId;
+@JsonAlias(value = {"ISACTIVED","isActived"}
+private Boolean isActived;

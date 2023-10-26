@@ -1,0 +1,5 @@
+
+@JsonAlias(value = {"CDCVERSION","cdcVersion"}
+private Integer cdcVersion;
+@JsonAlias(value = {"ID","id"}
+private Integer id;

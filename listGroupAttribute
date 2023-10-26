@@ -1,0 +1,7 @@
+
+@JsonAlias(value = {"LISTATTRIBUTEGROUP","listAttributeGroup"}
+private List&lt;AttributeGroupRequest&gt; listAttributeGroup;
+@JsonAlias(value = {"GROUPID","groupID"}
+private Integer groupID;
+@JsonAlias(value = {"REQUIRED","required"}
+private Boolean required;

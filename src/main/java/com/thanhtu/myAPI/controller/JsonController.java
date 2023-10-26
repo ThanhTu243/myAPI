@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -107,8 +108,9 @@ public class JsonController {
 		StringBuilder sbResult = new StringBuilder();
 		String[] tokens = result.split(",");
 		for (String token : tokens) {
-			sbResult.append(token).append("<br>");
+			sbResult.append(token).append(",<br>");
 		}
+		sbResult.deleteCharAt(sbResult.length() - 1);
 		return ResponseEntity.ok(sbResult.toString());
 	}
 
@@ -170,7 +172,7 @@ public class JsonController {
 				result.append(config + "[" + from + "].key" + "=" + "\"" + keyTokens[i] + "\"" + "<br>");
 			}
 			from++;
-			i=i+1;
+			i = i + 1;
 		}
 		return ResponseEntity.ok(result.toString());
 	}
@@ -190,9 +192,22 @@ public class JsonController {
 		return ResponseEntity.ok(mapAPILinkRequestBody);
 	}
 
-	@RequestMapping(value = "/test", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
-	public ResponseEntity<Object> testremovemap() throws Exception {
+	@RequestMapping(value = "/string-to-obj", method = RequestMethod.POST, consumes = "application/json", produces = "application/json; charset=utf-8")
+	public ResponseEntity<Object> StringToObject(@RequestBody HashMap<String, Object> mapRequest) throws Exception {
 		List<RequestResponse> listResponses = new ArrayList<>();
+		if (mapRequest.size() == 1 && mapRequest.entrySet().iterator().next().getKey().matches("^_")) {
+			String type = mapRequest.entrySet().iterator().next().getKey().split("_")[1];
+			String strValue = mapRequest.entrySet().iterator().next().getValue().toString();
+			String[] arrValue = strValue.split(",");
+			StringBuilder strResult = new StringBuilder();
+			strResult.append("[");
+			for (String val : arrValue) {
+				System.out.print(val + ", ");
+			}
+		}
+		for (Map.Entry<String, Object> entry : mapRequest.entrySet()) {
+
+		}
 		String strCustomerId = "[\"1076222062\",\n" + "\"1076237332\",\n" + "\"1076237772\",\n" + "\"1076238224\",\n"
 				+ "\"1076238582\",\n" + "\"1076239023\",\n" + "\"1076239177\",\n" + "\"1076241635\",\n"
 				+ "\"1076242435\",\n" + "\"1076242437\",\n" + "\"1076244191\",\n" + "\"1076244338\",\n"
